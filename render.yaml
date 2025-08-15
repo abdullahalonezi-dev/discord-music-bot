@@ -7,3 +7,5 @@ services:
     envVars:
       - key: DISCORD_TOKEN
         sync: false
+    healthCheckPath: /
+    autoDeploy: true
