@@ -3,7 +3,26 @@ from discord.ext import commands
 import yt_dlp
 import asyncio
 import os
-import config
+
+# إعدادات البوت من متغيرات البيئة
+DISCORD_TOKEN = os.getenv('DISCORD_TOKEN', 'your_token_here')
+
+# إعدادات الصوت
+AUDIO_FORMAT = "mp3"
+AUDIO_QUALITY = "192"
+
+# إعدادات البوت
+COMMAND_PREFIX = "!"
+BOT_STATUS = "🎵 !music_help للمساعدة"
+
+# ألوان الرسائل
+COLORS = {
+    "SUCCESS": 0x00ff00,    # أخضر
+    "ERROR": 0xff0000,      # أحمر
+    "WARNING": 0xffff00,    # أصفر
+    "INFO": 0x0099ff,       # أزرق
+    "NEUTRAL": 0x808080     # رمادي
+}
 
 # إعداد البوت
 intents = discord.Intents.default()
@@ -12,7 +31,7 @@ intents.voice_states = True
 intents.guilds = True
 intents.guild_messages = True
 
-bot = commands.Bot(command_prefix=config.COMMAND_PREFIX, intents=intents)
+bot = commands.Bot(command_prefix=COMMAND_PREFIX, intents=intents)
 
 # إعدادات yt-dlp
 ydl_opts = {
@@ -88,7 +107,7 @@ def get_player(guild_id):
 @bot.event
 async def on_ready():
     print(f'✅ {bot.user} تم تسجيل الدخول بنجاح!')
-    await bot.change_presence(activity=discord.Game(name=config.BOT_STATUS))
+    await bot.change_presence(activity=discord.Game(name=BOT_STATUS))
 
 @bot.command(name='join')
 async def join(ctx):
@@ -97,7 +116,7 @@ async def join(ctx):
         embed = discord.Embed(
             title="❌ خطأ",
             description="يجب أن تكون في قناة صوتية أولاً!",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
         return
@@ -111,14 +130,14 @@ async def join(ctx):
         embed = discord.Embed(
             title="🎧 تم الانضمام",
             description=f"تم الانضمام إلى {channel.name} بنجاح!",
-            color=config.COLORS["SUCCESS"]
+            color=COLORS["SUCCESS"]
         )
         await ctx.send(embed=embed)
     except Exception as e:
         embed = discord.Embed(
             title="❌ خطأ",
             description=f"فشل في الانضمام: {str(e)}",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -129,7 +148,7 @@ async def play(ctx, url):
         embed = discord.Embed(
             title="❌ خطأ",
             description="يجب أن تكون في قناة صوتية أولاً!",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
         return
@@ -146,7 +165,7 @@ async def play(ctx, url):
             embed = discord.Embed(
                 title="❌ خطأ",
                 description=f"فشل في الانضمام: {str(e)}",
-                color=0xff0000
+                color=COLORS["ERROR"]
             )
             await ctx.send(embed=embed)
             return
@@ -157,7 +176,7 @@ async def play(ctx, url):
         embed = discord.Embed(
             title="🎵 تمت الإضافة",
             description=f"**{song_info['title']}**\nتمت الإضافة إلى قائمة التشغيل",
-            color=config.COLORS["SUCCESS"]
+            color=COLORS["SUCCESS"]
         )
         embed.set_thumbnail(url=song_info['thumbnail'])
         embed.add_field(name="المدة", value=f"{song_info['duration']//60}:{song_info['duration']%60:02d}", inline=True)
@@ -171,7 +190,7 @@ async def play(ctx, url):
         embed = discord.Embed(
             title="❌ خطأ",
             description="فشل في استخراج معلومات الأغنية",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -186,14 +205,14 @@ async def pause(ctx):
         embed = discord.Embed(
             title="⏸️ تم الإيقاف المؤقت",
             description="تم إيقاف الأغنية مؤقتاً",
-            color=config.COLORS["WARNING"]
+            color=COLORS["WARNING"]
         )
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ خطأ",
             description="لا توجد أغنية تعمل حالياً",
-            color=config.COLORS["ERROR"]
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -208,14 +227,14 @@ async def resume(ctx):
         embed = discord.Embed(
             title="▶️ تم الاستئناف",
             description="تم استئناف الأغنية",
-            color=config.COLORS["SUCCESS"]
+            color=COLORS["SUCCESS"]
         )
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ خطأ",
             description="لا توجد أغنية متوقفة مؤقتاً",
-            color=config.COLORS["ERROR"]
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -231,14 +250,14 @@ async def stop(ctx):
         embed = discord.Embed(
             title="⏹️ تم الإيقاف",
             description="تم إيقاف الأغنية",
-            color=config.COLORS["ERROR"]
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ خطأ",
             description="البوت غير متصل بقناة الصوت",
-            color=config.COLORS["ERROR"]
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -251,14 +270,14 @@ async def skip(ctx):
         embed = discord.Embed(
             title="⏭️ تم التخطي",
             description="تم تخطي الأغنية الحالية",
-            color=config.COLORS["SUCCESS"]
+            color=COLORS["SUCCESS"]
         )
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ خطأ",
             description="لا توجد أغنية تعمل حالياً",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -271,14 +290,14 @@ async def queue(ctx):
         embed = discord.Embed(
             title="📋 قائمة التشغيل فارغة",
             description="لا توجد أغاني في قائمة التشغيل",
-            color=config.COLORS["NEUTRAL"]
+            color=COLORS["NEUTRAL"]
         )
         await ctx.send(embed=embed)
         return
 
     embed = discord.Embed(
         title="📋 قائمة التشغيل",
-        color=config.COLORS["SUCCESS"]
+        color=COLORS["SUCCESS"]
     )
 
     # الأغنية الحالية
@@ -320,14 +339,14 @@ async def leave(ctx):
         embed = discord.Embed(
             title="🚪 تم المغادرة",
             description="تم مغادرة قناة الصوت",
-            color=config.COLORS["ERROR"]
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
     else:
         embed = discord.Embed(
             title="❌ خطأ",
             description="البوت غير متصل بقناة صوتية",
-            color=0xff0000
+            color=COLORS["ERROR"]
         )
         await ctx.send(embed=embed)
 
@@ -340,7 +359,7 @@ async def clear(ctx):
     embed = discord.Embed(
         title="🗑️ تم المسح",
         description="تم مسح قائمة التشغيل",
-        color=config.COLORS["SUCCESS"]
+        color=COLORS["SUCCESS"]
     )
     await ctx.send(embed=embed)
 
@@ -351,7 +370,7 @@ async def loop(ctx):
     player.loop = not player.loop
     
     status = "مفعل" if player.loop else "ملغي"
-    color = config.COLORS["SUCCESS"] if player.loop else config.COLORS["ERROR"]
+    color = COLORS["SUCCESS"] if player.loop else COLORS["ERROR"]
     
     embed = discord.Embed(
         title="🔁 التكرار",
@@ -366,7 +385,7 @@ async def test(ctx):
     embed = discord.Embed(
         title="🧪 اختبار البوت",
         description="البوت يعمل بشكل طبيعي! ✅",
-        color=config.COLORS["SUCCESS"]
+        color=COLORS["SUCCESS"]
     )
     await ctx.send(embed=embed)
 
@@ -376,7 +395,7 @@ async def help_command(ctx):
     embed = discord.Embed(
         title="🎵 بوت الموسيقى - قائمة الأوامر",
         description="جميع الأوامر المتاحة لاستخدام البوت",
-        color=config.COLORS["SUCCESS"]
+        color=COLORS["SUCCESS"]
     )
     
     commands_list = [
@@ -390,7 +409,7 @@ async def help_command(ctx):
         ("🚪 !leave", "مغادرة قناة الصوت"),
         ("🗑️ !clear", "مسح قائمة التشغيل"),
         ("🔁 !loop", "تفعيل/إلغاء التكرار"),
-        ("❓ !help", "عرض هذه القائمة")
+        ("❓ !music_help", "عرض هذه القائمة")
     ]
     
     for cmd, desc in commands_list:
@@ -401,9 +420,9 @@ async def help_command(ctx):
 
 # تشغيل البوت
 if __name__ == "__main__":
-    TOKEN = config.DISCORD_TOKEN
-    if TOKEN == "your_discord_bot_token_here":
-        print("❌ خطأ: يرجى تحديث DISCORD_TOKEN في ملف config.py")
+    TOKEN = DISCORD_TOKEN
+    if TOKEN == "your_token_here":
+        print("❌ خطأ: يرجى تعيين DISCORD_TOKEN في متغيرات البيئة")
         print("احصل على رمز البوت من: https://discord.com/developers/applications")
     else:
         bot.run(TOKEN)
